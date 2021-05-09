@@ -10,6 +10,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var btn1: UIButton!
+    @IBOutlet weak var okashiBtn: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,6 +19,10 @@ class ViewController: UIViewController {
 
     @IBAction func btn1TouchUp(_ sender: Any) {
         let second = MainViewController()
+        present(second, animated: true, completion: nil)
+    }
+    @IBAction func okashiBtnTouchUp(_ sender: Any) {
+        let second = OkashiViewController()
         present(second, animated: true, completion: nil)
     }
     
