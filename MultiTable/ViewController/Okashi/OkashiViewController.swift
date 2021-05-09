@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import SafariServices
 
-class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDataSource {
+class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, SFSafariViewControllerDelegate {
 
     @IBOutlet weak var searchText: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
@@ -27,6 +28,9 @@ class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         // TableViewのデータソースを設定
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "okashiCell")
+        
+        //TableViewのdelegateを設定
+        tableView.delegate = self
     }
     
     //Cellの総数を返す
@@ -69,7 +73,7 @@ class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         }
         
         //request url生成
-        guard let req_url = URL(string: "https://sysbird.jp/toriko/api/?apikey=guest&format=json&keyword=\(keyword_encord)&max=10&order=r") else {
+        guard let req_url = URL(string: "https://sysbird.jp/toriko/api/?apikey=guest&format=json&keyword=\(keyword_encord)&max=20&order=r") else {
             return
         }
         print(req_url)
@@ -134,6 +138,26 @@ class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         let item: [ItemJson]?
     }
     
+    // ------- safali --------
+    
+    // Cellが選択された時に呼び出されるDelegateメソッド
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //ハイライト解除
+        tableView.deselectRow(at: indexPath, animated: true)
+        //SFSafaliViewを開く
+        let safariViewController = SFSafariViewController(url: okashiList[indexPath.row].link)
+        //delegateの通知先を自分自身
+        safariViewController.delegate = self
+        //safaliviewを開く
+        present(safariViewController, animated: true, completion: nil)
+        
+    }
+    
+    // Safaliが閉じられた時に呼ばれるDelegateメソッド
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        //safaliviewを閉じる?実際は検索画面が閉じる
+        dismiss(animated: true, completion: nil)
+    }
     
 
     /*
