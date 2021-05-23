@@ -7,6 +7,7 @@
 
 import UIKit
 import SafariServices
+import Alamofire
 
 class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDataSource, UITableViewDelegate, SFSafariViewControllerDelegate {
 
@@ -31,6 +32,10 @@ class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         
         //TableViewのdelegateを設定
         tableView.delegate = self
+        
+        //TODO: 初回検索
+        searchText.text = "アイス"
+        searchOkashiAF(keyword: "アイス")
     }
     
     //Cellの総数を返す
@@ -123,6 +128,54 @@ class OkashiViewController: UIViewController, UISearchBarDelegate, UITableViewDa
         })
         // ダウンロード開始
         task.resume()
+        
+    }
+    
+    //okashi検索
+    func searchOkashiAF(keyword: String) {
+        // 検索KeywordをURLEncoding
+        guard let keyword_encord = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            return
+        }
+        
+        let req_url_str: String =  "https://sysbird.jp/toriko/api/?apikey=guest&format=json&keyword=\(keyword_encord)&max=20&order=r"
+        
+        AF.request(req_url_str)
+        .response { response in
+            debugPrint(response.response?.statusCode ?? 0)
+            debugPrint(response.result)
+            guard let data = response.data else { return }
+            do {
+                //jsondecoderインスタンス
+                let decoder = JSONDecoder()
+                //responseJsonをParseして格納
+                let json = try decoder.decode(ResultJson.self, from: data)
+                print(json)
+                
+                //取得確認
+                if let items = json.item {
+                    //リスト初期化
+                    self.okashiList.removeAll()
+                    for item in items {
+                        // お菓子名称、メーカー、URL,画像URLをアンラップ(値があるか確認）
+                        if let name = item.name, let maker = item.maker, let url = item.url, let image = item.image {
+                            let okashi = (name, maker, url, image)
+                            self.okashiList.append(okashi)
+                        }
+                    }
+                    // TableViewを更新する
+                    self.tableView.reloadData()
+
+                    //debug
+                    if let okashidbg = self.okashiList.first {
+                        print("--------------------")
+                        print("okashiList[0] = \(okashidbg)")
+                    }
+                }
+            } catch let error {
+                print("error decode json \(error)")
+            }
+        }
         
     }
 
